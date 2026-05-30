@@ -13,22 +13,22 @@ async function togglRequest(
   body?: unknown,
 ): Promise<{ ok: boolean; status: number; data: unknown }> {
   try {
-    const headers: Record<string, string> = {
-      Authorization: authHeader(settings),
-      'Content-Type': 'application/json',
-    };
-    console.log('[toggl-sync] request', method, url);
-    const response = await PluginAPI.request({
-      url,
+    console.log('[toggl-sync] fetch', method, url);
+    const response = await fetch(url, {
       method,
-      headers,
+      headers: {
+        Authorization: authHeader(settings),
+        'Content-Type': 'application/json',
+      },
       body: body !== undefined ? JSON.stringify(body) : undefined,
     });
-    console.log('[toggl-sync] response status:', response.status, 'data:', JSON.stringify(response.data));
-    const ok = response.status >= 200 && response.status < 300;
-    return { ok, status: response.status, data: response.data };
+    const text = await response.text();
+    let data: unknown = text;
+    try { data = JSON.parse(text); } catch { /* keep raw text */ }
+    console.log('[toggl-sync] response', response.status, typeof data === 'object' ? JSON.stringify(data) : data);
+    return { ok: response.ok, status: response.status, data };
   } catch (err) {
-    console.error('[toggl-sync] request threw:', err);
+    console.error('[toggl-sync] fetch threw:', err);
     return { ok: false, status: 0, data: null };
   }
 }
@@ -67,6 +67,5 @@ export async function stopCurrentRunningEntry(
   settings: PluginSettings,
 ): Promise<void> {
   const url = `${BASE_URL}/me/time_entries/current/stop`;
-  // 404 = no running entry, treat as success
   await togglRequest('PATCH', url, settings);
 }

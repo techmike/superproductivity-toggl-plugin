@@ -75,11 +75,5 @@ declare global {
     registerConfigHandler(fn: () => void): void;
     openDialog(opts: { title?: string; htmlContent?: string; buttons: DialogButton[] }): void;
     translate(key: string, params?: unknown): string;
-    request(opts: {
-      url: string;
-      method: string;
-      headers?: Record<string, string>;
-      body?: unknown;
-    }): Promise<{ status: number; data: unknown }>;
   };
 }
