@@ -5,7 +5,7 @@ const STORAGE_KEY = 'toggl-plugin-mappings';
 let _store: MappingStore = { version: 1, entries: {} };
 
 export function initMappingStore(): void {
-  const raw = PluginAPI.loadSyncedData(STORAGE_KEY) as MappingStore | null;
+  const raw = PluginAPI.loadPersistedData(STORAGE_KEY) as MappingStore | null;
   if (raw && raw.version === 1 && typeof raw.entries === 'object') {
     _store = raw;
   } else {

@@ -17,7 +17,7 @@ function init(): void {
     });
   }
 
-  PluginAPI.on('CURRENT_TASK_CHANGE', (payload: unknown) => {
+  PluginAPI.registerHook('currentTaskChange', (payload: unknown) => {
     onCurrentTaskChange(payload as CurrentTaskChangePayload).catch(() => {
       // Unhandled errors must not crash the plugin host
     });
