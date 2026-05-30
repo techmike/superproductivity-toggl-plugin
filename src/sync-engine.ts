@@ -1,9 +1,16 @@
-import { CurrentTaskPayload } from './types';
+import { CurrentTaskPayload, PluginSettings, SPTask } from './types';
 import { loadSettings } from './settings';
 import { getMapping, setMapping, saveMappingStore } from './mapping-store';
 import { startEntry, stopEntry, stopCurrentRunningEntry } from './toggl-client';
 
 const LOG = '[toggl-sync]';
+
+function resolveProjectId(settings: PluginSettings, task: SPTask): number | null {
+  if (task.projectId && settings.spToTogglProjectMap?.[task.projectId]) {
+    return settings.spToTogglProjectMap[task.projectId];
+  }
+  return settings.defaultProjectId;
+}
 
 // Track the previously active SP task ID in memory
 let _previousTaskId: string | null = null;
@@ -54,7 +61,8 @@ export async function onCurrentTaskChange(task: CurrentTaskPayload): Promise<voi
     }
 
     console.log(LOG, 'Creating Toggl entry for:', task.title);
-    const result = await startEntry(settings, task);
+    const projectId = resolveProjectId(settings, task);
+    const result = await startEntry(settings, task, projectId);
     console.log(LOG, 'Start result:', result.ok, result.status, result.entry?.id);
 
     if (result.ok && result.entry) {

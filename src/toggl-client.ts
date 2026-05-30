@@ -1,4 +1,4 @@
-import { PluginSettings, SPTask, TogglResult, TogglTimeEntry } from './types';
+import { PluginSettings, SPTask, TogglProject, TogglResult, TogglTimeEntry } from './types';
 
 const BASE_URL = 'https://api.track.toggl.com/api/v9';
 
@@ -33,15 +33,26 @@ async function togglRequest(
   }
 }
 
+export async function fetchTogglProjects(
+  settings: PluginSettings,
+): Promise<TogglProject[]> {
+  const url = `${BASE_URL}/workspaces/${settings.workspaceId}/projects`;
+  const result = await togglRequest('GET', url, settings);
+  if (!result.ok) return [];
+  const projects = result.data as TogglProject[];
+  return projects.filter((p) => p.active);
+}
+
 export async function startEntry(
   settings: PluginSettings,
   task: SPTask,
+  projectId: number | null,
 ): Promise<TogglResult> {
   const url = `${BASE_URL}/workspaces/${settings.workspaceId}/time_entries`;
   const body = {
     description: task.title,
     workspace_id: settings.workspaceId,
-    project_id: settings.defaultProjectId,
+    project_id: projectId,
     start: new Date().toISOString(),
     duration: -1,
     billable: settings.defaultBillable,

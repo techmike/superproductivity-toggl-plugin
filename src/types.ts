@@ -5,6 +5,13 @@ export interface PluginSettings {
   defaultBillable: boolean;
   tag: string | null;
   stopExistingTogglTimer: boolean;
+  spToTogglProjectMap: Record<string, number>; // spProjectId → togglProjectId
+}
+
+export interface TogglProject {
+  id: number;
+  name: string;
+  active: boolean;
 }
 
 export interface TaskMapping {
@@ -71,6 +78,7 @@ declare global {
     persistDataSynced(data: string): Promise<void>;
     showSnack(opts: { msg: string; type: 'SUCCESS' | 'ERROR' | 'INFO' | 'WARNING'; ico?: string }): void;
     getTask(taskId: string): SPTask;
+    getAllProjects(): Promise<Array<{ id: string; title: string }>>;
     registerHook(hook: string, handler: (payload: unknown) => void): void;
     registerConfigHandler(fn: () => void): void;
     openDialog(opts: { title?: string; htmlContent?: string; buttons: DialogButton[] }): void;
