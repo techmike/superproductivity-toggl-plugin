@@ -1,21 +1,17 @@
 import { PluginSettings } from './types';
-
-const STORAGE_KEY = 'toggl-plugin-settings';
+import { getSettings, setSettings, savePluginData } from './storage';
 
 export function loadSettings(): PluginSettings | null {
-  const raw = PluginAPI.loadPersistedData(STORAGE_KEY) as PluginSettings | null;
-  if (!raw || !raw.togglApiToken || !raw.workspaceId) {
-    return null;
-  }
-  return raw;
+  return getSettings();
 }
 
-export function saveSettings(settings: PluginSettings): void {
-  PluginAPI.persistDataSynced(STORAGE_KEY, settings);
+export async function saveSettings(settings: PluginSettings): Promise<void> {
+  setSettings(settings);
+  await savePluginData();
 }
 
 export function openSettingsDialog(): void {
-  const current = (PluginAPI.loadPersistedData(STORAGE_KEY) as PluginSettings | null) ?? {
+  const current = getSettings() ?? {
     togglApiToken: '',
     workspaceId: 0,
     defaultProjectId: null,
@@ -24,54 +20,39 @@ export function openSettingsDialog(): void {
     stopExistingTogglTimer: true,
   };
 
-  const html = `
-    <style>
-      .tgs-field { display: flex; flex-direction: column; margin-bottom: 12px; }
-      .tgs-field label { font-size: 12px; margin-bottom: 4px; opacity: 0.7; }
-      .tgs-field input[type="text"],
-      .tgs-field input[type="number"] {
-        padding: 6px 8px;
-        border: 1px solid rgba(255,255,255,0.2);
-        border-radius: 4px;
-        background: rgba(255,255,255,0.05);
-        color: inherit;
-        font-size: 14px;
-      }
-      .tgs-row { display: flex; align-items: center; gap: 8px; }
-      .tgs-hint { font-size: 11px; opacity: 0.5; margin-top: 2px; }
-      .tgs-section { margin-bottom: 16px; }
-    </style>
-    <div style="min-width:320px">
-      <div class="tgs-section">
-        <div class="tgs-field">
-          <label>Toggl API Token *</label>
-          <input type="text" id="tgs-token" value="${escHtml(current.togglApiToken)}" placeholder="Your Toggl API token" />
-          <span class="tgs-hint">Profile Settings → API Token at track.toggl.com</span>
-        </div>
-        <div class="tgs-field">
-          <label>Workspace ID *</label>
-          <input type="number" id="tgs-workspace" value="${current.workspaceId || ''}" placeholder="e.g. 1234567" />
-          <span class="tgs-hint">Found in the Toggl URL: /workspaces/1234567/</span>
-        </div>
-        <div class="tgs-field">
-          <label>Default Project ID (optional)</label>
-          <input type="number" id="tgs-project" value="${current.defaultProjectId ?? ''}" placeholder="Leave blank for no project" />
-        </div>
-        <div class="tgs-field">
-          <label>Tag (optional)</label>
-          <input type="text" id="tgs-tag" value="${escHtml(current.tag ?? '')}" placeholder="e.g. super-productivity" />
-        </div>
-        <div class="tgs-row" style="margin-bottom:8px">
-          <input type="checkbox" id="tgs-billable" ${current.defaultBillable ? 'checked' : ''} />
-          <label for="tgs-billable">Mark entries as billable by default</label>
-        </div>
-        <div class="tgs-row">
-          <input type="checkbox" id="tgs-stop-existing" ${current.stopExistingTogglTimer ? 'checked' : ''} />
-          <label for="tgs-stop-existing">Stop any running Toggl timer when starting a new task</label>
-        </div>
-      </div>
-    </div>
-  `;
+  const html =
+    '<div style="min-width:320px">' +
+    '<div style="margin-bottom:12px">' +
+    '<label style="display:block;font-size:12px;opacity:0.7;margin-bottom:4px">Toggl API Token *</label>' +
+    '<input type="text" id="tgs-token" value="' + escHtml(current.togglApiToken) + '" placeholder="Your Toggl API token" style="width:100%;box-sizing:border-box">' +
+    '<div style="font-size:11px;opacity:0.5;margin-top:2px">Profile Settings → API Token at track.toggl.com</div>' +
+    '</div>' +
+    '<div style="margin-bottom:12px">' +
+    '<label style="display:block;font-size:12px;opacity:0.7;margin-bottom:4px">Workspace ID *</label>' +
+    '<input type="number" id="tgs-workspace" value="' + escHtml(String(current.workspaceId || '')) + '" placeholder="e.g. 1234567" style="width:100%;box-sizing:border-box">' +
+    '<div style="font-size:11px;opacity:0.5;margin-top:2px">Found in Toggl URL: track.toggl.com/workspaces/1234567/</div>' +
+    '</div>' +
+    '<div style="margin-bottom:12px">' +
+    '<label style="display:block;font-size:12px;opacity:0.7;margin-bottom:4px">Default Project ID (optional)</label>' +
+    '<input type="number" id="tgs-project" value="' + escHtml(String(current.defaultProjectId ?? '')) + '" placeholder="Leave blank for no project" style="width:100%;box-sizing:border-box">' +
+    '</div>' +
+    '<div style="margin-bottom:12px">' +
+    '<label style="display:block;font-size:12px;opacity:0.7;margin-bottom:4px">Tag (optional)</label>' +
+    '<input type="text" id="tgs-tag" value="' + escHtml(current.tag ?? '') + '" placeholder="e.g. super-productivity" style="width:100%;box-sizing:border-box">' +
+    '</div>' +
+    '<div style="margin-bottom:8px">' +
+    '<label style="display:flex;align-items:center;gap:8px;cursor:pointer">' +
+    '<input type="checkbox" id="tgs-billable"' + (current.defaultBillable ? ' checked' : '') + '>' +
+    ' Mark entries as billable by default' +
+    '</label>' +
+    '</div>' +
+    '<div>' +
+    '<label style="display:flex;align-items:center;gap:8px;cursor:pointer">' +
+    '<input type="checkbox" id="tgs-stop-existing"' + (current.stopExistingTogglTimer ? ' checked' : '') + '>' +
+    ' Stop any running Toggl timer when starting a new task' +
+    '</label>' +
+    '</div>' +
+    '</div>';
 
   PluginAPI.openDialog({
     title: 'Toggl Track Sync — Settings',
@@ -79,20 +60,20 @@ export function openSettingsDialog(): void {
     buttons: [
       {
         label: 'Cancel',
-        onClick: () => {},
+        onClick: function () {},
       },
       {
         label: 'Save',
         color: 'primary',
         icon: 'save',
         raised: true,
-        onClick: () => {
-          const token = (document.getElementById('tgs-token') as HTMLInputElement).value.trim();
-          const workspaceRaw = (document.getElementById('tgs-workspace') as HTMLInputElement).value.trim();
-          const projectRaw = (document.getElementById('tgs-project') as HTMLInputElement).value.trim();
-          const tag = (document.getElementById('tgs-tag') as HTMLInputElement).value.trim();
-          const billable = (document.getElementById('tgs-billable') as HTMLInputElement).checked;
-          const stopExisting = (document.getElementById('tgs-stop-existing') as HTMLInputElement).checked;
+        onClick: function () {
+          const token = (document.getElementById('tgs-token') as HTMLInputElement | null)?.value.trim() ?? '';
+          const workspaceRaw = (document.getElementById('tgs-workspace') as HTMLInputElement | null)?.value.trim() ?? '';
+          const projectRaw = (document.getElementById('tgs-project') as HTMLInputElement | null)?.value.trim() ?? '';
+          const tag = (document.getElementById('tgs-tag') as HTMLInputElement | null)?.value.trim() ?? '';
+          const billable = (document.getElementById('tgs-billable') as HTMLInputElement | null)?.checked ?? false;
+          const stopExisting = (document.getElementById('tgs-stop-existing') as HTMLInputElement | null)?.checked ?? true;
 
           if (!token) {
             PluginAPI.showSnack({ msg: 'Toggl Sync: API token is required.', type: 'WARNING' });
@@ -111,9 +92,9 @@ export function openSettingsDialog(): void {
             defaultBillable: billable,
             tag: tag || null,
             stopExistingTogglTimer: stopExisting,
+          }).then(function () {
+            PluginAPI.showSnack({ msg: 'Toggl Sync: settings saved.', type: 'SUCCESS' });
           });
-
-          PluginAPI.showSnack({ msg: 'Toggl Sync: settings saved.', type: 'SUCCESS' });
         },
       },
     ],
@@ -121,5 +102,7 @@ export function openSettingsDialog(): void {
 }
 
 function escHtml(str: string | null | undefined): string {
-  return (str ?? '').replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  const div = document.createElement('div');
+  div.appendChild(document.createTextNode(str ?? ''));
+  return div.innerHTML.replace(/"/g, '&quot;').replace(/'/g, '&#39;');
 }
