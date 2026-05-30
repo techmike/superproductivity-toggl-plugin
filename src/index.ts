@@ -1,25 +1,33 @@
-import { CurrentTaskChangePayload } from './types';
+import { CurrentTaskPayload } from './types';
 import { loadPluginData } from './storage';
 import { loadSettings, openSettingsDialog } from './settings';
 import { onCurrentTaskChange } from './sync-engine';
 
-async function init(): Promise<void> {
-  await loadPluginData();
+console.log('[toggl-sync] plugin loading');
 
-  PluginAPI.registerConfigHandler(openSettingsDialog);
+// Register hooks synchronously — SP may call these before any async work completes
+PluginAPI.registerConfigHandler(openSettingsDialog);
 
-  if (!loadSettings()) {
-    PluginAPI.showSnack({
-      msg: 'Toggl Sync: click the settings icon on the plugin to configure your API token.',
-      type: 'WARNING',
-    });
-  }
-
-  PluginAPI.registerHook('currentTaskChange', (payload: unknown) => {
-    onCurrentTaskChange(payload as CurrentTaskChangePayload).catch(() => {
-      // Unhandled errors must not crash the plugin host
-    });
+PluginAPI.registerHook('currentTaskChange', (payload: unknown) => {
+  console.log('[toggl-sync] currentTaskChange hook fired', JSON.stringify(payload));
+  onCurrentTaskChange(payload as CurrentTaskPayload).catch((err) => {
+    console.error('[toggl-sync] unhandled error in onCurrentTaskChange', err);
   });
-}
+});
 
-init().catch(() => {});
+console.log('[toggl-sync] hooks registered, loading persisted data...');
+
+// Load persisted data async — hooks above will still fire correctly
+loadPluginData()
+  .then(() => {
+    console.log('[toggl-sync] data loaded, settings:', JSON.stringify(loadSettings()));
+    if (!loadSettings()) {
+      PluginAPI.showSnack({
+        msg: 'Toggl Sync: click the settings icon on the plugin to configure your API token.',
+        type: 'WARNING',
+      });
+    }
+  })
+  .catch((err) => {
+    console.error('[toggl-sync] failed to load persisted data', err);
+  });
