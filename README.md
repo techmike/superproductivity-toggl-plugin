@@ -1,7 +1,7 @@
 # Super Productivity → Toggl Track Sync
 
-[![CI](https://github.com/YOUR_USERNAME/YOUR_REPO/actions/workflows/ci.yml/badge.svg)](https://github.com/YOUR_USERNAME/YOUR_REPO/actions/workflows/ci.yml)
-[![CodeQL](https://github.com/YOUR_USERNAME/YOUR_REPO/actions/workflows/security.yml/badge.svg)](https://github.com/YOUR_USERNAME/YOUR_REPO/actions/workflows/security.yml)
+[![CI](https://github.com/techmike/superproductivity-toggl-plugin/actions/workflows/ci.yml/badge.svg)](https://github.com/techmike/superproductivity-toggl-plugin/actions/workflows/ci.yml)
+[![CodeQL](https://github.com/techmike/superproductivity-toggl-plugin/actions/workflows/security.yml/badge.svg)](https://github.com/techmike/superproductivity-toggl-plugin/actions/workflows/security.yml)
 
 A plugin for [Super Productivity](https://super-productivity.com/) that automatically syncs your task timers to [Toggl Track](https://toggl.com/track/) in real time.
 
