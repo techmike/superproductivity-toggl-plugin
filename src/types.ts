@@ -58,6 +58,14 @@ export interface TogglResult {
   status?: number;
 }
 
+export interface DialogButton {
+  label: string;
+  icon?: string;
+  color?: 'primary' | 'warn';
+  raised?: boolean;
+  onClick: () => void | Promise<void>;
+}
+
 // Minimal PluginAPI type declaration — the real object is injected by Super Productivity
 declare global {
   const PluginAPI: {
@@ -66,6 +74,8 @@ declare global {
     showSnack(opts: { msg: string; type: 'SUCCESS' | 'ERROR' | 'INFO' | 'WARN' }): void;
     getTask(taskId: string): SPTask;
     on(hook: string, handler: (payload: unknown) => void): void;
+    registerConfigHandler(fn: () => void): void;
+    openDialog(opts: { title?: string; htmlContent?: string; buttons: DialogButton[] }): void;
     request(opts: {
       url: string;
       method: string;

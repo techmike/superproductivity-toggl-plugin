@@ -10,39 +10,36 @@ A Super Productivity plugin that syncs task timer events to Toggl Track — one-
 
 ## Setup
 
-### 1. Get your Toggl API token
+### 1. Build the plugin
 
-1. Log in at [track.toggl.com](https://track.toggl.com)
-2. Go to **Profile Settings → API Token**
-3. Copy your token
-
-### 2. Get your Workspace ID
-
-In Toggl, go to **Settings** — the workspace ID appears in the URL:
-`https://track.toggl.com/workspaces/123456/settings`
-
-### 3. Configure the plugin
-
-After loading the plugin in Super Productivity, open the browser/Electron DevTools console and run:
-
-```javascript
-PluginAPI.persistDataSynced('toggl-plugin-settings', {
-  togglApiToken: 'YOUR_API_TOKEN',
-  workspaceId: 123456,
-  defaultProjectId: null,        // optional: Toggl project ID for all entries
-  defaultBillable: false,
-  tag: 'super-productivity',     // set to null to skip tagging
-  stopExistingTogglTimer: true,  // stop any running Toggl timer before starting a new one
-});
+```bash
+npm install
+npm run build
 ```
 
-Reload Super Productivity. The plugin is now active.
+### 2. Package as a zip
 
-### 4. Install the plugin in Super Productivity
+```bash
+zip -j toggl-sync-plugin.zip manifest.json dist/plugin.js
+```
 
-1. Build: `npm install && npm run build`
-2. In Super Productivity go to **Settings → Plugins**
-3. Click **Load Plugin** and select the `manifest.json` file from this directory
+### 3. Install in Super Productivity
+
+1. Go to **Settings → Plugins**
+2. Click **Install Plugin** and select `toggl-sync-plugin.zip`
+
+### 4. Configure your Toggl credentials
+
+After installation, a warning snack appears at the bottom of the screen. Click the **gear icon** on the Toggl Sync plugin card in **Settings → Plugins** to open the settings form.
+
+Fill in:
+- **Toggl API Token** — from [track.toggl.com](https://track.toggl.com) → Profile Settings → API Token
+- **Workspace ID** — visible in your Toggl URL: `track.toggl.com/workspaces/123456/`
+- **Default Project ID** — optional, leave blank for no project
+- **Tag** — defaults to `super-productivity`
+- **Billable** and **Stop existing timer** checkboxes
+
+Click **Save**. The plugin is now active — no reload needed.
 
 ## Development
 
@@ -55,16 +52,7 @@ npm run build:prod # minified production build
 
 ## Reset / remove API token
 
-```javascript
-PluginAPI.persistDataSynced('toggl-plugin-settings', {
-  togglApiToken: '',
-  workspaceId: 0,
-  defaultProjectId: null,
-  defaultBillable: false,
-  tag: null,
-  stopExistingTogglTimer: false,
-});
-```
+Open the settings form (gear icon on the plugin card), clear the API Token field, and save. The plugin will stop syncing and show a setup prompt on the next task start.
 
 ## Privacy
 
