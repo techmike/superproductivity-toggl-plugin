@@ -319,23 +319,6 @@ CI will automatically run typecheck, lint, tests, and build on your PR.
 
 ---
 
-## Publishing to a second remote
-
-To keep this repo as your development origin and push to a separate public repo:
-
-```bash
-# Add the public repo as a second remote
-git remote add public git@github.com:PUBLIC_ACCOUNT/REPO_NAME.git
-
-# Push main to the public repo
-git push public main
-
-# Push a release tag
-git push public v1.0.0
-```
-
----
-
 ## Scope
 
 This plugin is one-way only: Super Productivity → Toggl. There is no sync in the reverse direction and no multi-device conflict resolution.
