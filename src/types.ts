@@ -20,9 +20,10 @@ export interface MappingStore {
   entries: Record<string, TaskMapping>;
 }
 
+// payload.current and payload.previous are the full task objects, not just ids
 export interface CurrentTaskChangePayload {
-  current: { id: string } | null;
-  previous: { id: string } | null;
+  current: SPTask | null;
+  previous: SPTask | null;
 }
 
 export interface TogglStartRequest {
