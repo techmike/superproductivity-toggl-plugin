@@ -1,11 +1,21 @@
 import { CurrentTaskChangePayload } from './types';
 import { initMappingStore } from './mapping-store';
-import { loadSettings } from './settings';
+import { loadSettings, openSettingsDialog } from './settings';
 import { onCurrentTaskChange } from './sync-engine';
 
 function init(): void {
   initMappingStore();
-  loadSettings(); // show setup snack on first run if unconfigured
+
+  // Register the gear icon handler in SP's plugin settings panel
+  PluginAPI.registerConfigHandler(openSettingsDialog);
+
+  // Prompt unconfigured users to open settings
+  if (!loadSettings()) {
+    PluginAPI.showSnack({
+      msg: 'Toggl Sync: click the settings icon on the plugin to configure your API token.',
+      type: 'WARN',
+    });
+  }
 
   PluginAPI.on('CURRENT_TASK_CHANGE', (payload: unknown) => {
     onCurrentTaskChange(payload as CurrentTaskChangePayload).catch(() => {
