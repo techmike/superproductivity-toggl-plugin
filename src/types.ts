@@ -69,15 +69,14 @@ export interface DialogButton {
 // Minimal PluginAPI type declaration — the real object is injected by Super Productivity
 declare global {
   const PluginAPI: {
-    loadSyncedData(key: string): unknown;
-    loadPersistedData(key: string): unknown;
-    persistDataSynced(key: string, data: unknown): void;
-    showSnack(opts: { msg: string; type: 'SUCCESS' | 'ERROR' | 'INFO' | 'WARNING' }): void;
+    loadSyncedData(): Promise<string | null>;
+    persistDataSynced(data: string): Promise<void>;
+    showSnack(opts: { msg: string; type: 'SUCCESS' | 'ERROR' | 'INFO' | 'WARNING'; ico?: string }): void;
     getTask(taskId: string): SPTask;
-    on(hook: string, handler: (payload: unknown) => void): void;
     registerHook(hook: string, handler: (payload: unknown) => void): void;
     registerConfigHandler(fn: () => void): void;
     openDialog(opts: { title?: string; htmlContent?: string; buttons: DialogButton[] }): void;
+    translate(key: string, params?: unknown): string;
     request(opts: {
       url: string;
       method: string;
