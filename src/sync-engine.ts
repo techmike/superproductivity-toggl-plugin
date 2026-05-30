@@ -5,7 +5,7 @@ import { startEntry, stopEntry, stopCurrentRunningEntry } from './toggl-client';
 
 const LOG = '[toggl-sync]';
 
-function resolveProjectId(settings: PluginSettings, task: SPTask): number | null {
+export function resolveProjectId(settings: PluginSettings, task: SPTask): number | null {
   if (task.projectId && settings.spToTogglProjectMap?.[task.projectId]) {
     return settings.spToTogglProjectMap[task.projectId];
   }
