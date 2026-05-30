@@ -21,16 +21,14 @@ jobs:
           node-version: '20'
           cache: 'npm'
 
-      - name: Install dependencies
-        run: npm ci
+      - name: Install dependencies and build
+        run: npm install && npm run build:prod
 
-      - name: Build (minified)
-        run: npm run build:prod
+      - name: Package plugin zip
+        run: zip -j toggl-sync-plugin.zip manifest.json dist/plugin.js
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
-          files: |
-            dist/plugin.js
-            manifest.json
+          files: toggl-sync-plugin.zip
           generate_release_notes: true

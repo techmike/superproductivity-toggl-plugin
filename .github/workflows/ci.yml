@@ -33,11 +33,14 @@ jobs:
         run: npm run test
 
       - name: Build
-        run: npm run build
+        run: npm install && npm run build
+
+      - name: Package plugin zip
+        run: zip -j toggl-sync-plugin.zip manifest.json dist/plugin.js
 
       - name: Upload build artifact
         uses: actions/upload-artifact@v4
         with:
-          name: plugin-js
-          path: dist/plugin.js
+          name: toggl-sync-plugin
+          path: toggl-sync-plugin.zip
           retention-days: 7
