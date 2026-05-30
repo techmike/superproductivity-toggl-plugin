@@ -71,7 +71,7 @@ declare global {
   const PluginAPI: {
     loadSyncedData(key: string): unknown;
     persistDataSynced(key: string, data: unknown): void;
-    showSnack(opts: { msg: string; type: 'SUCCESS' | 'ERROR' | 'INFO' | 'WARN' }): void;
+    showSnack(opts: { msg: string; type: 'SUCCESS' | 'ERROR' | 'INFO' | 'WARNING' }): void;
     getTask(taskId: string): SPTask;
     on(hook: string, handler: (payload: unknown) => void): void;
     registerConfigHandler(fn: () => void): void;
