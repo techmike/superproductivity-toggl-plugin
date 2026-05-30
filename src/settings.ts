@@ -3,7 +3,7 @@ import { PluginSettings } from './types';
 const STORAGE_KEY = 'toggl-plugin-settings';
 
 export function loadSettings(): PluginSettings | null {
-  const raw = PluginAPI.loadSyncedData(STORAGE_KEY) as PluginSettings | null;
+  const raw = PluginAPI.loadPersistedData(STORAGE_KEY) as PluginSettings | null;
   if (!raw || !raw.togglApiToken || !raw.workspaceId) {
     return null;
   }
@@ -15,7 +15,7 @@ export function saveSettings(settings: PluginSettings): void {
 }
 
 export function openSettingsDialog(): void {
-  const current = (PluginAPI.loadSyncedData(STORAGE_KEY) as PluginSettings | null) ?? {
+  const current = (PluginAPI.loadPersistedData(STORAGE_KEY) as PluginSettings | null) ?? {
     togglApiToken: '',
     workspaceId: 0,
     defaultProjectId: null,
