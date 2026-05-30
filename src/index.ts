@@ -13,7 +13,7 @@ function init(): void {
   if (!loadSettings()) {
     PluginAPI.showSnack({
       msg: 'Toggl Sync: click the settings icon on the plugin to configure your API token.',
-      type: 'WARN',
+      type: 'WARNING',
     });
   }
 

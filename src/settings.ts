@@ -95,12 +95,12 @@ export function openSettingsDialog(): void {
           const stopExisting = (document.getElementById('tgs-stop-existing') as HTMLInputElement).checked;
 
           if (!token) {
-            PluginAPI.showSnack({ msg: 'Toggl Sync: API token is required.', type: 'WARN' });
+            PluginAPI.showSnack({ msg: 'Toggl Sync: API token is required.', type: 'WARNING' });
             return;
           }
           const workspaceId = parseInt(workspaceRaw, 10);
           if (!workspaceId) {
-            PluginAPI.showSnack({ msg: 'Toggl Sync: Workspace ID is required.', type: 'WARN' });
+            PluginAPI.showSnack({ msg: 'Toggl Sync: Workspace ID is required.', type: 'WARNING' });
             return;
           }
 
@@ -120,6 +120,6 @@ export function openSettingsDialog(): void {
   });
 }
 
-function escHtml(str: string): string {
-  return str.replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+function escHtml(str: string | null | undefined): string {
+  return (str ?? '').replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 }
