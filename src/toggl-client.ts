@@ -17,10 +17,18 @@ async function togglRequest(
       Authorization: authHeader(settings),
       'Content-Type': 'application/json',
     };
-    const response = await PluginAPI.request({ url, method, headers, body });
+    console.log('[toggl-sync] request', method, url);
+    const response = await PluginAPI.request({
+      url,
+      method,
+      headers,
+      body: body !== undefined ? JSON.stringify(body) : undefined,
+    });
+    console.log('[toggl-sync] response status:', response.status, 'data:', JSON.stringify(response.data));
     const ok = response.status >= 200 && response.status < 300;
     return { ok, status: response.status, data: response.data };
-  } catch {
+  } catch (err) {
+    console.error('[toggl-sync] request threw:', err);
     return { ok: false, status: 0, data: null };
   }
 }
