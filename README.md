@@ -1,11 +1,23 @@
 # Super Productivity → Toggl Track Sync
 
-[![CI](https://github.com/YOUR_USERNAME/YOUR_REPO/actions/workflows/ci.yml/badge.svg)](https://github.com/YOUR_USERNAME/YOUR_REPO/actions/workflows/ci.yml)
-[![CodeQL](https://github.com/YOUR_USERNAME/YOUR_REPO/actions/workflows/security.yml/badge.svg)](https://github.com/YOUR_USERNAME/YOUR_REPO/actions/workflows/security.yml)
+[![CI](https://github.com/techmike/superproductivity-toggl-plugin/actions/workflows/ci.yml/badge.svg)](https://github.com/techmike/superproductivity-toggl-plugin/actions/workflows/ci.yml)
+[![CodeQL](https://github.com/techmike/superproductivity-toggl-plugin/actions/workflows/security.yml/badge.svg)](https://github.com/techmike/superproductivity-toggl-plugin/actions/workflows/security.yml)
 
 A plugin for [Super Productivity](https://super-productivity.com/) that automatically syncs your task timers to [Toggl Track](https://toggl.com/track/) in real time.
 
 When you start a task in Super Productivity, a Toggl time entry starts. When you stop or switch tasks, Toggl stops. Projects are matched by name automatically — no manual ID entry required.
+
+---
+
+## Installation
+
+**No build required.** Download the latest release and install directly into Super Productivity:
+
+1. Go to the [Releases page](https://github.com/techmike/superproductivity-toggl-plugin/releases)
+2. Download `toggl-sync-plugin.zip` from the latest release
+3. In Super Productivity, go to **Settings → Plugins → Add Plugin**
+4. Select the downloaded zip file
+5. Follow the [setup steps](#setup) to enter your Toggl credentials
 
 ---
 
