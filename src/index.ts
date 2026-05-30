@@ -1,4 +1,4 @@
-import { CurrentTaskChangePayload } from './types';
+import { CurrentTaskPayload } from './types';
 import { loadPluginData } from './storage';
 import { loadSettings, openSettingsDialog } from './settings';
 import { onCurrentTaskChange } from './sync-engine';
@@ -10,7 +10,7 @@ PluginAPI.registerConfigHandler(openSettingsDialog);
 
 PluginAPI.registerHook('currentTaskChange', (payload: unknown) => {
   console.log('[toggl-sync] currentTaskChange hook fired', JSON.stringify(payload));
-  onCurrentTaskChange(payload as CurrentTaskChangePayload).catch((err) => {
+  onCurrentTaskChange(payload as CurrentTaskPayload).catch((err) => {
     console.error('[toggl-sync] unhandled error in onCurrentTaskChange', err);
   });
 });

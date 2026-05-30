@@ -1,14 +1,15 @@
-import { CurrentTaskChangePayload } from './types';
+import { CurrentTaskPayload } from './types';
 import { loadSettings } from './settings';
 import { getMapping, setMapping, saveMappingStore } from './mapping-store';
 import { startEntry, stopEntry, stopCurrentRunningEntry } from './toggl-client';
 
 const LOG = '[toggl-sync]';
 
-export async function onCurrentTaskChange(
-  payload: CurrentTaskChangePayload,
-): Promise<void> {
-  console.log(LOG, 'currentTaskChange', JSON.stringify(payload));
+// Track the previously active SP task ID in memory
+let _previousTaskId: string | null = null;
+
+export async function onCurrentTaskChange(task: CurrentTaskPayload): Promise<void> {
+  console.log(LOG, 'currentTaskChange', task ? task.title : 'null');
 
   const settings = loadSettings();
   if (!settings) {
@@ -16,13 +17,14 @@ export async function onCurrentTaskChange(
     return;
   }
 
-  // STOP phase — always runs before start on a task switch
-  if (payload.previous) {
-    const prev = payload.previous;
-    console.log(LOG, 'STOP phase — previous task:', prev.id, prev.title);
-    const mapping = getMapping(prev.id);
+  const previousTaskId = _previousTaskId;
+  _previousTaskId = task?.id ?? null;
+
+  // STOP phase — stop whatever was running before
+  if (previousTaskId) {
+    const mapping = getMapping(previousTaskId);
     if (mapping && mapping.status === 'running') {
-      console.log(LOG, 'Stopping Toggl entry', mapping.togglEntryId);
+      console.log(LOG, 'Stopping Toggl entry', mapping.togglEntryId, 'for task', previousTaskId);
       const result = await stopEntry(settings, mapping.togglEntryId);
       console.log(LOG, 'Stop result:', result.ok, result.status);
       if (result.ok) {
@@ -30,25 +32,19 @@ export async function onCurrentTaskChange(
       } else {
         setMapping({ ...mapping, status: 'error' });
         PluginAPI.showSnack({
-          msg: `Toggl Sync: failed to stop timer for "${prev.title}" (HTTP ${result.status}).`,
+          msg: `Toggl Sync: failed to stop timer (HTTP ${result.status}).`,
           type: 'ERROR',
         });
       }
       await saveMappingStore();
-    } else {
-      console.log(LOG, 'No running mapping for previous task — nothing to stop');
     }
   }
 
   // START phase
-  if (payload.current) {
-    const task = payload.current;
-    console.log(LOG, 'START phase — current task:', task.id, task.title);
-    const mapping = getMapping(task.id);
-
-    // Duplicate protection: skip if already tracking this task
-    if (mapping && mapping.status === 'running') {
-      console.log(LOG, 'Already tracking this task — skipping duplicate start');
+  if (task) {
+    const existing = getMapping(task.id);
+    if (existing && existing.status === 'running') {
+      console.log(LOG, 'Already tracking task', task.id, '— skipping duplicate start');
       return;
     }
 
@@ -78,6 +74,6 @@ export async function onCurrentTaskChange(
       });
     }
   } else {
-    console.log(LOG, 'No current task — timer stopped in SP');
+    console.log(LOG, 'Task stopped — no new task to start');
   }
 }
