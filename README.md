@@ -1,5 +1,8 @@
 # Super Productivity → Toggl Track Sync
 
+[![CI](https://github.com/YOUR_USERNAME/YOUR_REPO/actions/workflows/ci.yml/badge.svg)](https://github.com/YOUR_USERNAME/YOUR_REPO/actions/workflows/ci.yml)
+[![CodeQL](https://github.com/YOUR_USERNAME/YOUR_REPO/actions/workflows/security.yml/badge.svg)](https://github.com/YOUR_USERNAME/YOUR_REPO/actions/workflows/security.yml)
+
 A plugin for [Super Productivity](https://super-productivity.com/) that automatically syncs your task timers to [Toggl Track](https://toggl.com/track/) in real time.
 
 When you start a task in Super Productivity, a Toggl time entry starts. When you stop or switch tasks, Toggl stops. Projects are matched by name automatically — no manual ID entry required.
@@ -283,6 +286,53 @@ dist/
 | `npm run build:prod` | Same, minified |
 | `npm run watch` | Rebuild on every file save |
 | `npm run typecheck` | TypeScript type check (no output files) |
+| `npm run lint` | ESLint across all source files |
+| `npm run test` | Run Vitest unit tests once |
+| `npm run test:watch` | Run Vitest in watch mode |
+| `npm run test:coverage` | Run tests with V8 coverage report |
+
+---
+
+## Releases
+
+Each tagged release (`v*`) automatically triggers a GitHub Actions workflow that builds a minified `dist/plugin.js` and attaches it to the GitHub Release alongside `manifest.json`.
+
+**To install without building from source:**
+1. Go to the [Releases page](../../releases)
+2. Download `plugin.js` from the latest release
+3. Install it in Super Productivity via **Settings → Plugins → Add Plugin**
+
+---
+
+## Contributing
+
+1. Fork the repository and create a branch from `main`
+2. Install dependencies: `npm install`
+3. Make your changes in `src/`
+4. Run `npm run typecheck` — must pass
+5. Run `npm run lint` — must pass
+6. Run `npm run test` — all tests must pass
+7. Run `npm run build` — must produce `dist/plugin.js`
+8. Open a pull request against `main`
+
+CI will automatically run typecheck, lint, tests, and build on your PR.
+
+---
+
+## Publishing to a second remote
+
+To keep this repo as your development origin and push to a separate public repo:
+
+```bash
+# Add the public repo as a second remote
+git remote add public git@github.com:PUBLIC_ACCOUNT/REPO_NAME.git
+
+# Push main to the public repo
+git push public main
+
+# Push a release tag
+git push public v1.0.0
+```
 
 ---
 

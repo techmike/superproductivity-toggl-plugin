@@ -1,15 +1,25 @@
 {
   "name": "superproductivity-to-toggl",
   "version": "1.0.0",
+  "type": "module",
   "description": "Super Productivity plugin that syncs task timers to Toggl Track",
   "scripts": {
     "build": "esbuild src/index.ts --bundle --outfile=dist/plugin.js --format=iife --target=es2020 --platform=browser",
     "build:prod": "esbuild src/index.ts --bundle --outfile=dist/plugin.js --format=iife --target=es2020 --platform=browser --minify",
     "watch": "esbuild src/index.ts --bundle --outfile=dist/plugin.js --format=iife --target=es2020 --platform=browser --watch",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint src",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage"
   },
   "devDependencies": {
+    "@typescript-eslint/eslint-plugin": "^8.0.0",
+    "@typescript-eslint/parser": "^8.0.0",
+    "@vitest/coverage-v8": "^1.6.0",
     "esbuild": "^0.21.0",
-    "typescript": "^5.4.0"
+    "eslint": "^9.0.0",
+    "typescript": "^5.4.0",
+    "vitest": "^1.6.0"
   }
 }
