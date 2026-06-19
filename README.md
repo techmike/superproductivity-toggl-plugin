@@ -41,6 +41,17 @@ When you start a task in Super Productivity, a Toggl time entry starts. When you
 
 ---
 
+## Compatibility
+
+| Plugin version | Tested with SP version | Notes |
+|-----------------|------------------------|-------|
+| 1.1.0           | 18.9.1                 | Requires an SP version whose `currentTaskChange` hook delivers `{ current, previous }`. |
+| 1.0.0           | Pre-18.x               | Requires an SP version whose `currentTaskChange` hook delivers the task object directly (not wrapped). |
+
+See [CHANGELOG.md](./CHANGELOG.md) for the full version history and compatibility notes. If task timers stop syncing after an SP update, check the changelog first — the hook payload shape has changed between SP versions before.
+
+---
+
 ## Setup
 
 ### 1. Get your Toggl credentials
