@@ -7,8 +7,23 @@ Productivity (SP) versions each release was tested against.
 
 | Plugin version | Tested with SP version(s) | Should work with                         | Notes |
 |-----------------|---------------------------|-------------------------------------------|-------|
+| 1.1.1           | 18.9.1                    | Same as 1.1.0                             | Safety fix — see below. No SP-compatibility change. |
 | 1.1.0           | 18.9.1                    | SP versions whose `currentTaskChange` hook delivers `{ current, previous }` | Fixes the payload-shape regression below. Untested against SP < 18.9.1; if your SP version still sends the task object directly (not wrapped), use 1.0.x instead. |
 | 1.0.0           | Pre-18.x (raw task payload) | SP versions whose `currentTaskChange` hook delivers the task object directly | Initial release. Breaks on SP versions that wrap the payload in `{ current, previous }` (see 1.1.0). |
+
+## [1.1.1]
+
+### Fixed
+
+- **Safety:** `stopEntry` and `stopCurrentRunningEntry` now fetch the target
+  Toggl entry first and refuse to stop it unless its description starts with
+  `[SP]`, so the plugin can never stop a timer it didn't create.
+- **Safety:** `startEntry` now prefixes every entry it creates with `[SP]`
+  (description was previously the bare task title), so the plugin's own
+  entries are recognized by the guard above. Without this, the plugin could
+  no longer stop the very entries it started.
+- Added a test that starts an entry via `startEntry` and confirms `stopEntry`
+  recognizes it as plugin-owned, verifying the two halves work together.
 
 ## [1.1.0]
 
