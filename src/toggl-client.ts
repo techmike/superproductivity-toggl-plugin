@@ -1,6 +1,7 @@
 import { PluginSettings, SPTask, TogglProject, TogglResult, TogglTimeEntry } from './types';
 
 const BASE_URL = 'https://api.track.toggl.com/api/v9';
+const SP_ENTRY_PREFIX = '[SP]';
 
 function authHeader(settings: PluginSettings): string {
   return 'Basic ' + btoa(settings.togglApiToken + ':api_token');
@@ -50,7 +51,7 @@ export async function startEntry(
 ): Promise<TogglResult> {
   const url = `${BASE_URL}/workspaces/${settings.workspaceId}/time_entries`;
   const body = {
-    description: task.title,
+    description: `${SP_ENTRY_PREFIX} ${task.title}`,
     workspace_id: settings.workspaceId,
     project_id: projectId,
     start: new Date().toISOString(),
@@ -64,8 +65,6 @@ export async function startEntry(
   const entry = result.data as TogglTimeEntry;
   return { ok: true, entry };
 }
-
-const SP_ENTRY_PREFIX = '[SP]';
 
 function wasCreatedByThisPlugin(entry: TogglTimeEntry | null | undefined): boolean {
   return !!entry?.description?.startsWith(SP_ENTRY_PREFIX);

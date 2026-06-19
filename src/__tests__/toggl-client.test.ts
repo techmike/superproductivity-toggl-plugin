@@ -49,7 +49,7 @@ describe('toggl-client', () => {
       expect(opts.headers.Authorization).toMatch(/^Basic /);
       const body = JSON.parse(opts.body);
       expect(body.project_id).toBe(99);
-      expect(body.description).toBe('Test task');
+      expect(body.description).toBe('[SP] Test task');
     });
 
     it('returns ok:false on HTTP error', async () => {
@@ -66,6 +66,30 @@ describe('toggl-client', () => {
       const result = await startEntry(settings, { id: 'x', title: 'x', projectId: null, tagIds: [] }, null);
       expect(result.ok).toBe(false);
       expect(result.status).toBe(0);
+    });
+
+    it('creates an entry whose description passes stopEntry\'s "[SP]" ownership check', async () => {
+      const task = { id: 'sp-1', title: 'Test task', projectId: null, tagIds: [] };
+      const createdEntry = { id: 42, workspace_id: 12345, description: '', start: '2024-01-01T10:00:00Z', stop: null, duration: -1 };
+
+      // Capture the description startEntry actually sends, and echo it back as the created entry.
+      vi.stubGlobal('fetch', vi.fn().mockImplementation((_url: string, opts: RequestInit) => {
+        const body = JSON.parse(opts.body as string);
+        createdEntry.description = body.description;
+        return Promise.resolve({ ok: true, status: 200, text: () => Promise.resolve(JSON.stringify(createdEntry)) });
+      }));
+
+      const { startEntry, stopEntry } = await import('../toggl-client');
+      const startResult = await startEntry(settings, task, 99);
+      expect(startResult.ok).toBe(true);
+
+      // Now drive stopEntry against the entry startEntry just "created", via a fresh GET+PATCH mock.
+      vi.stubGlobal('fetch', vi.fn()
+        .mockResolvedValueOnce({ ok: true, status: 200, text: () => Promise.resolve(JSON.stringify(createdEntry)) })
+        .mockResolvedValueOnce({ ok: true, status: 200, text: () => Promise.resolve('{}') }));
+
+      const stopResult = await stopEntry(settings, createdEntry.id);
+      expect(stopResult.ok).toBe(true);
     });
   });
 
