@@ -83,7 +83,7 @@ describe('onCurrentTaskChange', () => {
     vi.mocked(loadSettings).mockReturnValue(null);
     const { startEntry } = await import('../toggl-client');
     const { onCurrentTaskChange } = await import('../sync-engine');
-    await onCurrentTaskChange({ id: 'task-1', title: 'T', projectId: null, tagIds: [] });
+    await onCurrentTaskChange({ current: { id: 'task-1', title: 'T', projectId: null, tagIds: [] }, previous: null });
     expect(startEntry).not.toHaveBeenCalled();
   });
 
@@ -96,8 +96,13 @@ describe('onCurrentTaskChange', () => {
     vi.mocked(startEntry).mockResolvedValue({ ok: true, entry: { id: 42, workspace_id: 1, description: 'T', start: '2024-01-01T00:00:00Z', stop: null, duration: -1 } });
 
     const { onCurrentTaskChange } = await import('../sync-engine');
-    await onCurrentTaskChange({ id: 'task-new', title: 'T', projectId: null, tagIds: [] });
+    await onCurrentTaskChange({ current: { id: 'task-new', title: 'T', projectId: null, tagIds: [] }, previous: null });
     expect(startEntry).toHaveBeenCalledOnce();
+    expect(startEntry).toHaveBeenCalledWith(
+      makeSettings(),
+      { id: 'task-new', title: 'T', projectId: null, tagIds: [] },
+      expect.anything(),
+    );
   });
 
   it('skips start when task is already running', async () => {
@@ -114,7 +119,54 @@ describe('onCurrentTaskChange', () => {
     vi.mocked(stopEntry).mockResolvedValue({ ok: true });
 
     const { onCurrentTaskChange } = await import('../sync-engine');
-    await onCurrentTaskChange({ id: 'task-dup', title: 'Dup', projectId: null, tagIds: [] });
+    await onCurrentTaskChange({ current: { id: 'task-dup', title: 'Dup', projectId: null, tagIds: [] }, previous: null });
     expect(startEntry).not.toHaveBeenCalled();
+  });
+
+  it('treats a wrapped null current as "no task" and stops the previous mapping', async () => {
+    const { loadSettings } = await import('../settings');
+    vi.mocked(loadSettings).mockReturnValue(makeSettings());
+    const { getMapping, setMapping } = await import('../mapping-store');
+    vi.mocked(getMapping).mockImplementation((id) =>
+      id === 'task-running'
+        ? { spTaskId: 'task-running', togglEntryId: 7, status: 'running', startedAt: '', stoppedAt: null }
+        : undefined,
+    );
+    const { startEntry, stopEntry } = await import('../toggl-client');
+    vi.mocked(stopEntry).mockResolvedValue({ ok: true });
+
+    const { onCurrentTaskChange } = await import('../sync-engine');
+    // First call establishes the in-memory "previous task" tracking.
+    await onCurrentTaskChange({ current: { id: 'task-running', title: 'Running', projectId: null, tagIds: [] }, previous: null });
+    // Second call delivers the wrapped payload with current: null (task stopped in SP).
+    await onCurrentTaskChange({ current: null, previous: { id: 'task-running', title: 'Running', projectId: null, tagIds: [] } });
+
+    expect(stopEntry).toHaveBeenCalledWith(makeSettings(), 7);
+    expect(setMapping).toHaveBeenCalledWith(expect.objectContaining({ status: 'stopped' }));
+    expect(startEntry).not.toHaveBeenCalled();
+  });
+
+  it('stops the previous task and starts the new one when switching directly between two tasks', async () => {
+    const { loadSettings } = await import('../settings');
+    vi.mocked(loadSettings).mockReturnValue(makeSettings());
+    const { getMapping } = await import('../mapping-store');
+    vi.mocked(getMapping).mockImplementation((id) =>
+      id === 'task-a'
+        ? { spTaskId: 'task-a', togglEntryId: 11, status: 'running', startedAt: '', stoppedAt: null }
+        : undefined,
+    );
+    const { startEntry, stopEntry } = await import('../toggl-client');
+    vi.mocked(stopEntry).mockResolvedValue({ ok: true });
+    vi.mocked(startEntry).mockResolvedValue({ ok: true, entry: { id: 99, workspace_id: 1, description: 'B', start: '2024-01-01T00:00:00Z', stop: null, duration: -1 } });
+
+    const { onCurrentTaskChange } = await import('../sync-engine');
+    const taskA = { id: 'task-a', title: 'Task A', projectId: null, tagIds: [] };
+    const taskB = { id: 'task-b', title: 'Task B', projectId: null, tagIds: [] };
+
+    await onCurrentTaskChange({ current: taskA, previous: null });
+    await onCurrentTaskChange({ current: taskB, previous: taskA });
+
+    expect(stopEntry).toHaveBeenCalledWith(makeSettings(), 11);
+    expect(startEntry).toHaveBeenCalledWith(makeSettings(), taskB, expect.anything());
   });
 });

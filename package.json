@@ -1,6 +1,6 @@
 {
   "name": "superproductivity-to-toggl",
-  "version": "1.0.0",
+  "version": "1.1.1",
   "type": "module",
   "description": "Super Productivity plugin that syncs task timers to Toggl Track",
   "scripts": {

@@ -1,9 +1,9 @@
 {
   "id": "toggl-sync",
   "name": "Toggl Track Sync",
-  "version": "1.0.0",
+  "version": "1.1.1",
   "manifestVersion": 1,
-  "minSupVersion": "7.0.0",
+  "minSupVersion": "18.9.1",
   "description": "One-way sync of Super Productivity task timers to Toggl Track.",
   "author": "techcode007",
   "entryPoint": "dist/plugin.js",

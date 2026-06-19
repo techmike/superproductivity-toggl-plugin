@@ -1,4 +1,4 @@
-import { CurrentTaskPayload, PluginSettings, SPTask } from './types';
+import { CurrentTaskChangePayload, PluginSettings, SPTask } from './types';
 import { loadSettings } from './settings';
 import { getMapping, setMapping, saveMappingStore } from './mapping-store';
 import { startEntry, stopEntry, stopCurrentRunningEntry } from './toggl-client';
@@ -15,7 +15,8 @@ export function resolveProjectId(settings: PluginSettings, task: SPTask): number
 // Track the previously active SP task ID in memory
 let _previousTaskId: string | null = null;
 
-export async function onCurrentTaskChange(task: CurrentTaskPayload): Promise<void> {
+export async function onCurrentTaskChange(payload: CurrentTaskChangePayload): Promise<void> {
+  const task = payload?.current ?? null;
   console.log(LOG, 'currentTaskChange', task ? task.title : 'null');
 
   const settings = loadSettings();
