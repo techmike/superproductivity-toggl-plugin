@@ -97,13 +97,21 @@ To rebuild automatically while developing:
 npm run watch
 ```
 
+Super Productivity loads plugins from a zip containing `manifest.json` and `dist/plugin.js` at the zip root, so package one before installing/testing:
+
+```bash
+zip -j toggl-sync-plugin.zip manifest.json dist/plugin.js
+```
+
+Re-run the `zip` command after every rebuild (`npm run build` or `npm run build:prod`) to pick up your latest changes.
+
 ---
 
 ### 3. Install in Super Productivity
 
 1. Open Super Productivity
 2. Go to **Settings → Plugins**
-3. Click **Add Plugin** and select `dist/plugin.js`
+3. Click **Add Plugin** and select the `toggl-sync-plugin.zip` you built above
 4. The plugin loads immediately; you will see a banner prompting you to configure it
 
 ---
@@ -313,6 +321,33 @@ dist/
 | `npm run test` | Run Vitest unit tests once |
 | `npm run test:watch` | Run Vitest in watch mode |
 | `npm run test:coverage` | Run tests with V8 coverage report |
+| `zip -j toggl-sync-plugin.zip manifest.json dist/plugin.js` | Package a build for manual install/testing in SP |
+
+---
+
+## Testing
+
+This project relies on three layers of automated checks, all run on every push/PR via GitHub Actions ([`ci.yml`](.github/workflows/ci.yml) and [`security.yml`](.github/workflows/security.yml)):
+
+### Unit / regression tests
+
+- `npm run test` — runs the Vitest suite in `src/__tests__/` (`npm run test:watch` for watch mode, `npm run test:coverage` for a V8 coverage report).
+- Covers `sync-engine.ts` (start/stop/dedup logic and the `currentTaskChange` payload contract), `mapping-store.ts`, `storage.ts`, and `toggl-client.ts` (Toggl API request/response handling, including failure paths).
+- These tests double as regression tests: when a bug like the `currentTaskChange` payload-shape break is fixed, a test is added that reproduces the exact failing scenario so it can't silently reoccur (see `CHANGELOG.md`).
+- `npm run typecheck` and `npm run lint` (ESLint) also run on every change to catch type and style regressions before they reach `main`.
+
+### Security tests
+
+- **CodeQL analysis** (`security.yml`) — static analysis for JavaScript/TypeScript on every push/PR and weekly on a schedule, scanning for common vulnerability patterns (injection, unsafe data flow, etc.).
+- **`npm audit --audit-level=high`** (`security.yml`) — fails CI if any dependency has a known high/critical severity vulnerability.
+
+### Manual / end-to-end verification
+
+There's no automated SP-integration test (the `PluginAPI` global is only available inside a running Super Productivity instance), so after building you should manually verify in SP:
+1. Build and package the plugin (see [Build the plugin](#2-build-the-plugin)).
+2. Install the zip in SP, start a task, and confirm a Toggl time entry starts.
+3. Switch tasks and stop the timer, confirming the previous Toggl entry stops and the new one starts.
+4. Check the browser/SP devtools console for `[toggl-sync]` log lines if something doesn't sync — see `CHANGELOG.md` for known SP-version-specific payload issues.
 
 ---
 
@@ -322,7 +357,7 @@ Each tagged release (`v*`) automatically triggers a GitHub Actions workflow that
 
 **To install without building from source:**
 1. Go to the [Releases page](../../releases)
-2. Download `plugin.js` from the latest release
+2. Download `toggl-sync-plugin.zip` from the latest release
 3. Install it in Super Productivity via **Settings → Plugins → Add Plugin**
 
 ---
